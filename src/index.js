@@ -22,11 +22,7 @@ class KafkaConsumer {
       throw new Error("You need define a group");
     }
 
-    if (
-      !urls ||
-      !Array.isArray(urls) ||
-      (Array.isArray(urls) && urls.length === 0)
-    ) {
+    if (!urls || typeof urls != "string") {
       throw new Error("You need define a kafka url");
     }
   }
