@@ -11,9 +11,14 @@ class KafkaConsumer {
   }
 
   validateConfig() {
-    const { groupId, urls } = this.config;
+    const { consumer, urls } = this.config;
 
-    if (groupId === null || groupId === undefined || groupId === "") {
+    if (
+      consumer == null ||
+      consumer.initialize == null ||
+      consumer.initialize.groupId == null ||
+      consumer.initialize.groupId === ""
+    ) {
       throw new Error("You need define a group");
     }
 
