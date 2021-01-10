@@ -13,23 +13,18 @@ class Consumer {
     this.timeout = null;
     this.consumer = null;
 
-    const kafka = new Kafka({
-      clientId: this.config.clientId,
-      brokers: this.config.address,
-      connectionTimeout: this.config.connectionTimeout || 3000,
-      requestTimeout: this.config.requestTimeout || 60000
-    });
+    const { initialize: initializeConfig, run, ...kafkaConfig } = this.config;
 
-    this.consumer = kafka.consumer({ groupId: this.config.groupId });
+    const kafka = new Kafka(kafkaConfig);
+    this.consumer = kafka.consumer(initializeConfig || {});
   }
 
   async start() {
     await this.consumer.connect();
 
     await this.consumer.run({
-      partitionsConsumedConcurrently: this.config.partitionsConcurrently || 1,
-      autoCommit: this.config.autoCommit,
-      eachMessage: this.execute.bind(this)
+      ...(this.config.run || {}),
+      eachMessage: this.execute.bind(this),
     });
   }
 
@@ -38,20 +33,18 @@ class Consumer {
 
     const events = this.events[topic] || [];
 
-    const promises = events.map(callback => {
-      return new Promise(resolve => {
+    const promises = events.map((callback) => {
+      return new Promise((resolve) => {
         callback(result, async () => {
           resolve();
 
-          if (this.config.autoCommit) {
+          if (this.config.run && this.config.run.autoCommit) {
             return;
           }
 
-          const offset = String(Number(message.offset) + 1)
+          const offset = String(Number(message.offset) + 1);
 
-          await this.consumer.commitOffsets([
-            { topic, partition, offset }
-          ]);
+          await this.consumer.commitOffsets([{ topic, partition, offset }]);
         });
       });
     });
@@ -73,7 +66,7 @@ class Consumer {
       throw new Error("We can'f found your controller");
     }
 
-    topicArray.forEach(async item => {
+    topicArray.forEach(async (item) => {
       if (!item) {
         return;
       }
@@ -83,7 +76,7 @@ class Consumer {
       this.topics.push(item);
       await this.consumer.subscribe({
         topic: item,
-        fromBeginning: this.config.fromBeginning || true
+        fromBeginning: this.config.fromBeginning || true,
       });
     });
   }

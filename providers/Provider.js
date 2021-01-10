@@ -20,7 +20,7 @@ class KafkaProvider extends ServiceProvider {
         return null;
       }
 
-      return new Kafka(Config, Logger, Helpers);
+      return new Kafka(Config.get("kafka"), Logger, Helpers);
     });
   }
 

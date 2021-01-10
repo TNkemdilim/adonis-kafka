@@ -5,18 +5,13 @@ class Producer {
     this.Logger = Logger;
     this.config = config;
 
-    const kafka = new Kafka({
-      clientId: this.config.clientId,
-      brokers: this.config.address,
-      connectionTimeout: this.config.connectionTimeout || 3000,
-      requestTimeout: this.config.requestTimeout || 60000
-    });
-
-    this.producer = kafka.producer();
+    const { initialize: initializeConfig, ...kafkaConfig } = this.config;
+    const kafka = new Kafka(kafkaConfig);
+    this.producer = kafka.producer(initializeConfig || {});
   }
 
   async start() {
-    await this.producer.connect();
+    await this.producer.connect(this.config.run || {});
   }
 
   async send(topic, data) {
@@ -25,11 +20,11 @@ class Producer {
     }
 
     let messages = Array.isArray(data) ? data : [data];
-    messages = messages.map(message => {
+    messages = messages.map((message) => {
       if (!message.value) {
         message = {
-          value: JSON.stringify(message)
-        }
+          value: JSON.stringify(message),
+        };
       }
 
       if (typeof message.value !== "string") {

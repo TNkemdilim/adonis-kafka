@@ -3,32 +3,39 @@ const Producer = require("./Producer");
 
 class KafkaConsumer {
   constructor(config, Logger, Helpers) {
-    this.config = config.get("kafka");
+    this.config = config;
     this.Logger = Logger;
     this.Helpers = Helpers;
 
     this.start();
   }
 
-  start() {
-    const { groupId, url, port, urls } = this.config;
+  validateConfig() {
+    const { groupId, urls } = this.config;
 
     if (groupId === null || groupId === undefined || groupId === "") {
       throw new Error("You need define a group");
     }
 
-    if ((url === null || url === undefined || url === "") && !urls) {
+    if (
+      !urls ||
+      !Array.isArray(urls) ||
+      (Array.isArray(urls) && urls.length === 0)
+    ) {
       throw new Error("You need define a kafka url");
     }
+  }
 
-    const addresses = urls ? urls.split(",") : null;
+  start() {
+    this.validateConfig();
 
-    const address = addresses || [`${url}:${port}`];
+    // Initialize consumer & producter
+    const { producer, consumer, ...generalConfig } = this.config;
+    const consumerConfig = { ...generalConfig, ...consumer };
+    const producerConfig = { ...generalConfig, ...producer };
 
-    this.config.address = address;
-
-    this.consumer = new Consumer(this.Logger, this.config, this.Helpers);
-    this.producer = new Producer(this.Logger, this.config, this.Helpers);
+    this.consumer = new Consumer(this.Logger, consumerConfig, this.Helpers);
+    this.producer = new Producer(this.Logger, producerConfig, this.Helpers);
 
     this.consumer.start();
     this.producer.start();
