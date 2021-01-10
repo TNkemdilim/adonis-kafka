@@ -23,7 +23,7 @@ class KafkaConsumer {
     }
 
     if (!brokers || typeof brokers != "string") {
-      throw new Error("You need define a kafka broker");
+      throw new Error("You need to define a kafka broker.");
     }
   }
 
