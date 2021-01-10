@@ -11,7 +11,7 @@ class KafkaConsumer {
   }
 
   validateConfig() {
-    const { consumer, urls } = this.config;
+    const { consumer, brokers } = this.config;
 
     if (
       consumer == null ||
@@ -22,8 +22,8 @@ class KafkaConsumer {
       throw new Error("You need define a group");
     }
 
-    if (!urls || typeof urls != "string") {
-      throw new Error("You need define a kafka url");
+    if (!brokers || typeof brokers != "string") {
+      throw new Error("You need define a kafka broker");
     }
   }
 
