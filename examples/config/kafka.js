@@ -4,7 +4,8 @@ const Env = use("Env");
 module.exports = {
   clientId: "kafka",
   brokers: Env.get("KAFKA_URLS", "").split(","),
-  connectionTimeout: 20000,
+  connectionTimeout: 3000,
+  connectionTimeout: 60000,
   ssl: true,
 
   sasl: {
