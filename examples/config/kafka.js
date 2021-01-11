@@ -2,21 +2,27 @@
 const Env = use("Env");
 
 module.exports = {
-  brokers: Env.get("KAFKA_URLS", null),
-  connectionTimeout: 3000,
-  requestTimeout: 60000,
+  clientId: "kafka",
+  brokers: Env.get("KAFKA_URLS", "").split(","),
+  connectionTimeout: 20000,
   ssl: true,
+
+  sasl: {
+    mechanism: "plain",
+    username: Env.get("KAFKA_USERNAME"),
+    password: Env.get("KAFKA_PASSWORD"),
+  },
 
   producer: {
     initialize: {},
   },
 
   consumer: {
-    fromBeginning: Env.get("KAFKA_CONSUMER_FROM_BEGINNING", true),
+    fromBeginning: false,
     partitionsConcurrently: 1,
 
     initialize: {
-      groupId: Env.get("KAFKA_GROUP", "kafka"),
+      groupId: Env.get("KAFKA_GROUP", "stalls-core"),
     },
 
     run: {
