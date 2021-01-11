@@ -1,65 +1,59 @@
+const { Kafka } = require("kafkajs");
 const Consumer = require("./Consumer");
 const Producer = require("./Producer");
+const { parseConfig } = require("./utils/validation");
 
-class KafkaConsumer {
-  constructor(config, Logger, Helpers) {
-    this.config = config;
-    this.Logger = Logger;
-    this.Helpers = Helpers;
-
-    this.start();
+class AdonisKafka {
+  constructor(config, logger, helper) {
+    this.logger = logger;
+    this.helpers = helper;
+    this.connected = false;
+    this.config = parseConfig(config);
   }
 
-  validateConfig() {
-    const { consumer, brokers } = this.config;
-
-    if (
-      consumer == null ||
-      consumer.initialize == null ||
-      consumer.initialize.groupId == null ||
-      consumer.initialize.groupId === ""
-    ) {
-      throw new Error("You need define a group");
-    }
-
-    if (!brokers || !Array.isArray(brokers)) {
-      throw new Error("You need to define a kafka broker.");
-    }
+  async ensureConnected() {
+    if (!this.connected) await this.connect();
   }
 
-  start() {
-    this.validateConfig();
+  async connect() {
+    const kafka = new Kafka(this.config.shared);
 
-    // Initialize consumer & producter
-    const { producer, consumer, ...generalConfig } = this.config;
-    const consumerConfig = { ...generalConfig, ...consumer };
-    const producerConfig = { ...generalConfig, ...producer };
+    const appRoot = this.helper.appRoot();
+    this.consumer = new Consumer(
+      kafka,
+      this.logger,
+      this.config.consumer,
+      appRoot
+    );
 
-    this.consumer = new Consumer(this.Logger, consumerConfig, this.Helpers);
-    this.producer = new Producer(this.Logger, producerConfig, this.Helpers);
+    this.producer = new Producer(kafka, this.logger, this.config.producer);
 
-    this.consumer.start();
-    this.producer.start();
+    try {
+      await Promise.all([this.consumer.start(), this.producer.start()]);
+      this.logger.info("Successfully initialized Adonis Kafka");
+      this.connected = true;
+    } catch (err) {
+      this.logger.error("Failed to initialize Adonis Kafka: ", err);
+      this.connected = false;
+    }
   }
 
   on(topic, callback) {
-    this.consumer.on(topic, callback);
+    this.ensureConnected().then((_) => this.consumer.on(topic, callback));
   }
 
   send(topic, data) {
-    this.producer.send(topic, data);
+    this.ensureConnected().then((_) => this.producer.send(topic, data));
   }
 
   onCommit(err, topicPartitions) {
     if (err) {
-      // There was an error committing
-      this.Logger.error("There was an error commiting", err);
+      this.logger.error("Commit error: ", err);
       throw new Error(err);
     }
 
-    // Commit went through. Let's log the topic partitions
-    this.Logger.info("commited", topicPartitions);
+    this.logger.info("commited", topicPartitions);
   }
 }
 
-module.exports = KafkaConsumer;
+module.exports = AdonisKafka;

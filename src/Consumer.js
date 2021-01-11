@@ -1,22 +1,22 @@
-/* eslint-disable global-require */
-/* eslint-disable import/no-dynamic-require */
 const { Kafka } = require("kafkajs");
 
 class Consumer {
-  constructor(Logger, config, Helpers) {
-    this.Logger = Logger;
-    this.Helpers = Helpers;
-    this.config = config;
+  /**
+   * Create Kafka consumer.
+   * @param {Kafka} kafka
+   * @param {object} logger
+   * @param {object} config
+   * @param {object} helper
+   */
+  constructor(kafka, logger, config, appDirectory) {
     this.topics = [];
     this.events = {};
-    this.killContainer = false;
     this.timeout = null;
-    this.consumer = null;
-
-    const { initialize: initializeConfig, run, ...kafkaConfig } = this.config;
-
-    const kafka = new Kafka(kafkaConfig);
-    this.consumer = kafka.consumer(initializeConfig || {});
+    this.logger = logger;
+    this.config = config;
+    this.killContainer = false;
+    this.appDirectory = appDirectory;
+    this.consumer = kafka.consumer(this.config.initialize || {});
   }
 
   async start() {
@@ -52,28 +52,26 @@ class Consumer {
     await Promise.all(promises);
   }
 
-  //
-
   async on(topic, callback) {
-    const callbackFunction = this.validateCallback(callback);
     let topicArray = topic;
+    const callbackFunction = this.validateCallback(callback);
 
     if (typeof topic === "string") {
       topicArray = topic.split(",");
     }
 
     if (!callbackFunction) {
-      throw new Error("We can'f found your controller");
+      throw new Error("We can't find your controller.");
     }
 
     topicArray.forEach(async (item) => {
-      if (!item) {
-        return;
-      }
+      if (!item) return;
+
       const events = this.events[item] || [];
       events.push(callbackFunction);
       this.events[item] = events;
       this.topics.push(item);
+
       await this.consumer.subscribe({
         topic: item,
         fromBeginning: this.config.fromBeginning || true,
@@ -83,19 +81,10 @@ class Consumer {
 
   validateCallback(callback) {
     // In this case the service is a function
-    if (typeof callback === "function") {
-      return callback;
-    }
+    if (typeof callback === "function") return callback;
 
-    const splited = callback.split(".");
-
-    const model = splited[0];
-    const func = splited[1];
-
-    const root = this.Helpers.appRoot();
-    const route = `${root}/app/Controllers/Kafka/${model}`;
-
-    const Module = require(route);
+    const [model, func] = callback.split(".");
+    const Module = require(`${this.appDirectory}/app/Controllers/Kafka/${model}`);
     const controller = new Module();
 
     if (typeof controller[func] === "function") {

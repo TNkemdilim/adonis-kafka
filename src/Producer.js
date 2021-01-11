@@ -1,13 +1,16 @@
 const { Kafka } = require("kafkajs");
 
 class Producer {
-  constructor(Logger, config) {
-    this.Logger = Logger;
+  /**
+   * Create Kafka consumer.
+   * @param {Kafka} kafka
+   * @param {object} logger
+   * @param {object} config
+   */
+  constructor(kafka, logger, config) {
+    this.logger = logger;
     this.config = config;
-
-    const { initialize: initializeConfig, ...kafkaConfig } = this.config;
-    const kafka = new Kafka(kafkaConfig);
-    this.producer = kafka.producer(initializeConfig || {});
+    this.producer = kafka.producer(this.config.initialize || {});
   }
 
   async start() {
@@ -39,7 +42,7 @@ class Producer {
       messages,
     });
 
-    this.Logger.info("sent data to kafka.");
+    this.logger.info("sent data to kafka.");
   }
 }
 

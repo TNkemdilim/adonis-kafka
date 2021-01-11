@@ -11,16 +11,16 @@ class KafkaProvider extends ServiceProvider {
    * @return {void}
    */
   register() {
-    this.app.singleton("Kafka", () => {
+    this.app.singleton("Kafka", async () => {
       const Config = this.app.use("Adonis/Src/Config");
       const Logger = this.app.use("Adonis/Src/Logger");
       const Helpers = this.app.use("Adonis/Src/Helpers");
 
-      if (Helpers.isAceCommand()) {
-        return null;
-      }
+      if (Helpers.isAceCommand()) return null;
 
-      return new Kafka(Config.get("kafka"), Logger, Helpers);
+      const kafka = Kafka(Config.get("kafka"), Logger, Helpers);
+      await kafka.start();
+      return kafka;
     });
   }
 
