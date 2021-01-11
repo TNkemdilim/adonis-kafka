@@ -18,12 +18,11 @@ class AdonisKafka {
   async connect() {
     const kafka = new Kafka(this.config.shared);
 
-    const appRoot = this.helper.appRoot();
     this.consumer = new Consumer(
       kafka,
       this.logger,
       this.config.consumer,
-      appRoot
+      this.helper.appRoot()
     );
 
     this.producer = new Producer(kafka, this.logger, this.config.producer);
