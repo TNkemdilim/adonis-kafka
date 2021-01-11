@@ -1,6 +1,6 @@
 const { ServiceProvider } = require("@adonisjs/fold");
 
-const Kafka = require("../src");
+const AdonisKafka = require("../src");
 
 class KafkaProvider extends ServiceProvider {
   /**
@@ -18,7 +18,7 @@ class KafkaProvider extends ServiceProvider {
 
       if (Helpers.isAceCommand()) return null;
 
-      const kafka = Kafka(Config.get("kafka"), Logger, Helpers);
+      const kafka = new AdonisKafka(Config.get("kafka"), Logger, Helpers);
       await kafka.start();
       return kafka;
     });
