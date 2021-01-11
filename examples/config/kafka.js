@@ -23,7 +23,7 @@ module.exports = {
     partitionsConcurrently: 1,
 
     initialize: {
-      groupId: Env.get("KAFKA_GROUP", "stalls-core"),
+      groupId: Env.get("KAFKA_GROUP", "random"),
     },
 
     run: {
