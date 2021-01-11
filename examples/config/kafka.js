@@ -5,6 +5,7 @@ module.exports = {
   brokers: Env.get("KAFKA_URLS", null),
   connectionTimeout: 3000,
   requestTimeout: 60000,
+  ssl: true,
 
   producer: {
     initialize: {},
