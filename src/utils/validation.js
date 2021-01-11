@@ -3,7 +3,7 @@
  *
  * @param {object} config
  */
-const parseConfig = ({ consumer, producers, ...shared }) => {
+const parseConfig = ({ consumer, producer, ...shared }) => {
   if (
     consumer == null ||
     consumer.initialize == null ||
