@@ -6,7 +6,7 @@ const { parseConfig } = require("./utils/validation");
 class AdonisKafka {
   constructor(config, logger, helper) {
     this.logger = logger;
-    this.helpers = helper;
+    this.helper = helper;
     this.connected = false;
     this.config = parseConfig(config);
   }
