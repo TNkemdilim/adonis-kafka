@@ -22,7 +22,7 @@ class KafkaConsumer {
       throw new Error("You need define a group");
     }
 
-    if (!brokers || typeof brokers != "string") {
+    if (!brokers || !Array.isArray(brokers)) {
       throw new Error("You need to define a kafka broker.");
     }
   }
