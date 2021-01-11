@@ -13,7 +13,7 @@ class Producer {
     this.producer = kafka.producer(this.config.initialize || {});
   }
 
-  async start() {
+  async connect() {
     await this.producer.connect(this.config.run || {});
   }
 

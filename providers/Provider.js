@@ -19,7 +19,7 @@ class KafkaProvider extends ServiceProvider {
       if (Helpers.isAceCommand()) return null;
 
       const kafka = new AdonisKafka(Config.get("kafka"), Logger, Helpers);
-      await kafka.start();
+      await kafka.connect();
       return kafka;
     });
   }

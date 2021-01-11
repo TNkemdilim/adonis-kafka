@@ -19,7 +19,7 @@ class Consumer {
     this.consumer = kafka.consumer(this.config.initialize || {});
   }
 
-  async start() {
+  async connect() {
     await this.consumer.connect();
 
     await this.consumer.run({

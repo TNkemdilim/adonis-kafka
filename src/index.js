@@ -29,7 +29,7 @@ class AdonisKafka {
     this.producer = new Producer(kafka, this.logger, this.config.producer);
 
     try {
-      await Promise.all([this.consumer.start(), this.producer.start()]);
+      await Promise.all([this.consumer.connect(), this.producer.connect()]);
       this.logger.info("Successfully initialized Adonis Kafka");
       this.connected = true;
     } catch (err) {
